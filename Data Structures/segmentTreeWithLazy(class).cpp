@@ -2,34 +2,23 @@
 
 using namespace std;
 typedef long long ll;
-class segmentWithLazy
-{
+
+template<typename T>
+class segmentWithLazy{
 private:
     struct data{
-        ll prop,sum;
-        data(){
-            prop=sum=0;
-        }
-        data(ll _sum,ll _prop){
-            sum=_sum;
-            prop=_prop;
-        }
+        T prop,sum;
+        data():prop(0),sum(0){}
+        data(T _sum,T _prop):sum(_sum),prop(_prop){}
     };
-public:
+    int n;
     vector<data> tree;
-    segmentWithLazy(){
-        tree=vector<data>(400020,data(0,0));
-    }
-
-    segmentWithLazy(int n){
-
-        tree=vector<data>(4*(n+10),data(0,0));
-    }
-
-    void SegmentTree(vector<ll> &given, int node, int low, int high)
-    {
-        if (low == high)
-        {
+public:
+    segmentWithLazy():n(2e5),tree(3*n+15,data(0,0)){}
+    segmentWithLazy(int _n):n(_n),tree(3*n+15,data(0,0)){}
+    void init(int _n){n =_n,tree.assign(3*n+15,data(0,0));}
+    void SegmentTree(vector<T> &given, int node, int low, int high){
+        if (low == high){
             tree[node].sum = given[low];
             return;
         }
@@ -40,38 +29,47 @@ public:
         SegmentTree(given, right, mid + 1, high);
         tree[node].sum = tree[left].sum + tree[right].sum;
     }
-    void update(int node, int low, int hi, int i, int j, ll value)
-    {
-        if (i>hi || j<low)
-            return;
-        if (low >= i&&hi <= j){
-            tree[node].sum+=((hi-low+1)*value);
-            tree[node].prop+=value;
-            return;
+    void propagate(int node,int low,int hi){
+        int left=2*node;
+        int right=left+1;
+        int mid =(low+hi)/2;
+        tree[node].sum+=(hi-low+1)*tree[node].prop;
+        if(hi!=low){
+            tree[left].prop+=tree[node].prop;
+            tree[right].prop+=tree[node].prop;
         }
-
-        int mid = (low + hi) / 2;
-        int left = 2 * node;
-        int right = left + 1;
-        update(left, low, mid, i, j, value);
-        update(right, mid + 1, hi, i, j, value);
-
-        tree[node].sum=tree[left].sum+tree[right].sum+(hi-low+1)*tree[node].prop;
+        tree[node].prop=0;
     }
-    ll query(int node, int low, int hi, int i, int j,ll carry=0)
-    {
-        if (i>hi || j<low)
-            return 0LL;
-        if (low >= i&&hi <= j)
-            return tree[node].sum+(hi-low+1)*carry;
-        int mid = (low + hi) / 2;
-        int left = 2 * node;
-        int right = left + 1;
-
-        ll x = query(left, low, mid, i, j,carry+tree[node].prop);
-        ll y = query(right, mid + 1, hi, i, j,carry+tree[node].prop);
-
-        return x + y;
+    void update(int node,int low,int hi,int i,int j,T value){
+        int left=2*node;
+        int right=left+1;
+        if(tree[node].prop) propagate(node,low,hi);
+        if(hi<i||j<low) return;
+        if(low>=i&&hi<=j){
+            tree[node].sum+=(hi-low+1)*value;
+            if(hi!=low){
+                tree[left].prop+=value;
+                tree[right].prop+=value;
+            }
+            tree[node].prop=0;
+            return ;
+        }
+        int mid=(low+hi)/2;
+        update(left,low,mid,i,j,value);
+        update(right,mid+1,hi,i,j,value);
+        tree[node].sum=tree[left].sum+tree[right].sum;
+    }
+    T query(int node,int low,int hi,int i,int j){
+        int left=2*node;
+        int right=left+1;
+        if(tree[node].prop) propagate(node,low,hi);
+        if(hi<i||j<low) return 0;
+        if(low>=i&&hi<=j)
+            return tree[node].sum;
+        int mid=(low+hi)/2;
+        T x= query(left,low,mid,i,j);
+        T y= query(right,mid+1,hi,i,j);
+        return x+y;
     }
 };
 int main() {
@@ -79,13 +77,12 @@ int main() {
     int n,q;
     cin>>n>>q;
 
-    segmentWithLazy seg(n);
+    segmentWithLazy<int> seg(n);
 
 
     while(q--){
         int a,b,c;
         cin>>a>>b>>c;
-        b++,c++;
         if(a==0){
             ll d;
             cin>>d;
