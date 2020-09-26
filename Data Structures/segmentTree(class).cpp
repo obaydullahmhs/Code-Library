@@ -2,8 +2,7 @@
 using namespace std;
 typedef long long ll;
 namespace Tree{
-    ///Start
-    template<typename T, typename Y>
+    template<typename T, typename Y> /** T = Tree Type, Y = value Type **/
     class SegmentTree{
     protected:
         virtual T merge(T x, T y) = 0;
@@ -17,12 +16,9 @@ namespace Tree{
                 tree[node] = valueOf(given[low]);
                 return;
             }
-            int left = node<<1;
-            int right = left + 1;
-            int mid = (low + high)>>1;
-            build(given, left, low, mid);
-            build(given, right, mid + 1, high);
-            tree[node] = merge(tree[left], tree[right]);
+            build(given, (node<<1), low, (low+high)>>1 );
+            build(given, 1 + (node<<1), ((low + high)>>1) + 1, high);
+            tree[node] = merge(tree[(node<<1)], tree[1 + (node<<1)]);
         }
         void update(int node, int low, int hi, int i, Y value){
 
@@ -30,14 +26,11 @@ namespace Tree{
                 tree[node] = valueOf(value);
                 return;
             }
-            int mid = (low + hi)>>1;
-            int left = node<<1;
-            int right = left + 1;
-            if (i <= mid)
-                update(left, low, mid, i, value);
+            if (i <= ((low + hi)>>1))
+                update((node<<1), low, (low + hi)>>1, i, value);
             else
-                update(right, mid + 1, hi, i, value);
-            tree[node] = merge(tree[left], tree[right]);
+                update(1 + (node<<1), ((low + hi)>>1) + 1, hi, i, value);
+            tree[node] = merge(tree[(node<<1)], tree[1 + (node<<1)]);
         }
         T query(int node, int low, int hi, int i, int j){
 
@@ -45,11 +38,8 @@ namespace Tree{
                 return neutral();
             if (low >= i&&hi <= j)
                 return tree[node];
-            int mid = (low + hi)>>1;
-            int left = node<<1;
-            int right = left + 1;
 
-            return merge(query(left, low, mid, i, j), query(right, mid + 1, hi, i, j)) ;
+            return merge(query((node<<1), low, (low + hi)>>1, i, j), query(1 + (node<<1), ((low + hi)>>1) + 1, hi, i, j)) ;
         }
     public:
         SegmentTree(){}
@@ -64,48 +54,28 @@ namespace Tree{
             return query(1, 1, n, l, r);
         }
     };
-    ///End
 
     template<typename T, typename Y>
     class AddSegTree: public SegmentTree<T, Y>{
-        virtual T merge(T x, T y)override {
-            return x + y;
-        }
-        virtual T valueOf(Y x)override {
-            return T(x);
-        }
-        virtual T neutral()override{
-            return 0;
-        }
+        virtual T merge(T x, T y)override { return x + y;}
+        virtual T valueOf(Y x)override { return T(x); }
+        virtual T neutral()override{ return 0;}
     };
 
     template<typename T, typename Y>
     class MinSegTree: public SegmentTree<T, Y>{
-        virtual T merge(T x, T y)override {
-            return min(x, y);
-        }
-        virtual T valueOf(Y x)override {
-            return T(x);
-        }
-        virtual T neutral()override {
-            return numeric_limits<Y> ::max()/2;
-        }
+        virtual T merge(T x, T y)override { return min(x, y); }
+        virtual T valueOf(Y x)override { return T(x); }
+        virtual T neutral()override { return numeric_limits<Y> ::max()/2; }
     };
 
     template<typename T, typename Y>
     class MaxSegTree: public SegmentTree<T, Y>{
-        virtual T merge(T x, T y)override {
-            return max(x, y);
-        }
-        virtual T valueOf(Y x)override {
-            return T(x);
-        }
-        virtual T neutral()override {
-            return numeric_limits<Y> ::min()/2;
-        }
+        virtual T merge(T x, T y)override { return max(x, y);}
+        virtual T valueOf(Y x)override { return T(x); }
+        virtual T neutral()override { return numeric_limits<Y> ::min()/2; }
     };
 }
-using namespace Tree;
 
 int main (){
     int n, q; cin>>n>>q;
@@ -116,8 +86,8 @@ int main (){
     while(q--){
         int c, ind; ll val; cin>>c>>ind>>val;
         if(c==1){
-            seg.update(++ind, val);
-        }else cout<<seg.query(++ind, val)<<"\n";
+            seg.update(ind, val);
+        }else cout<<seg.query(ind, val)<<"\n";
 
     }
     return 0;
