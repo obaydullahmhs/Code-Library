@@ -19,7 +19,7 @@ namespace Tree{
         virtual D valueOf(U x) = 0; /// convert the value to tree type
         virtual T returnValue(D x) = 0;    /// convert tree type to query type value
         virtual bool ifProp(D x) = 0;       /// if you need to propagate it's child
-        virtual void propagate(int node, int lo, int hi, vector<D>& tree, int value = 0) = 0;
+        virtual void propagate(int node, int lo, int hi, vector<D>& tree, U value = 0) = 0;
 
     private:
 
@@ -76,7 +76,7 @@ namespace Tree{
         virtual D valueOf(U x) override{ return D(x, 0);    }
         virtual T returnValue(D x) override {return x.sum; }
         virtual bool ifProp(D x) override { return (x.prop? true:false);}
-        void propagate(int node,int low,int hi, vector<D>& tree, int value = 0) override{    ///replace
+        virtual void propagate(int node,int low,int hi, vector<D>& tree, U value = 0) override{    ///replace
 
             assert(value == 0 || tree[node].prop==0); /** must be okay **/
 
