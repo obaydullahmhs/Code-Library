@@ -31,7 +31,7 @@ namespace SuffixArray{  ///0 based string
                 for(i = 0; i < n; i++) wws[wv[i]]++;
                 for(i = 1; i < m; i++) wws[i] += wws[i-1];
                 for(i = n - 1; i >= 0; i--) sa[--wws[wv[i]]] = wb[i];
-                for(t = wa, wa = wb, wb = t, p = 1, wa[sa[0]] = 0, i = 1; i < n; i++)
+                for(swap(wa, wb), p = 1, wa[sa[0]] = 0, i = 1; i < n; i++)
                     wa[sa[i]] = cmp(wb, sa[i-1], sa[i], j)? p - 1 : p++;
             }
         }
