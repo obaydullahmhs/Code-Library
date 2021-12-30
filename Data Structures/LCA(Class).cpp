@@ -1,100 +1,79 @@
-#include <bits/stdc++.h>
-
-using namespace std;
-
+template<typename T> /// lca, max and min road cost
 class LCA{
+
 private:
-    int N,LogV;
-    vector<vector<int> > sparse;
+    int n, logv;
+    const T inf = numeric_limits<T>::max()/3;
+    vector<vector<T> > sparse, maxsparse, minsparse;
+    vector<vector<pair<T, T> > > adj;
     vector<int> depth;
 
 public:
-    vector<vector<int> > adj;
-    LCA(){
-        N=20000;
-        LogV=20;
+
+    LCA(int _n):n(_n),logv(log2(n) + 1), sparse(logv + 2, vector<T>(n + 5, -1)), maxsparse(logv + 5, vector<T>(n + 5, -1)),
+    minsparse(logv + 5, vector<T>(n + 5, inf)), depth(n + 5, 0), adj(n + 5, vector<pair<T, T> >()){}
+
+    void init(int _n){
+        n = _n, logv = log2(n) + 1;
+        sparse.assign(logv + 2, vector<T>(n + 5, -1));
+        maxsparse.assign(logv + 5, vector<T>(n + 5, -1));
+        minsparse.assign(logv + 5, vector<T>(n + 5, inf));
+        depth.assign(n + 5, 0);
+        adj.assign(n + 5, vector<pair<T, T> >());
     }
-    ///Initializing
-    void init(int n){
-        N=n;
-        sparse=vector<vector<int> >(LogV+5,vector<int>(N+10,-1));
-        depth=vector<int>(N,0);
-        adj=vector<vector<int> >(N+10);
+
+    inline void addEdge(int u, int v, T w){
+        adj[u].emplace_back(v, w);
+        adj[v].emplace_back(u, w);
     }
-    ///DFS
-    void dfs(int node, int par){
-        for(int it:adj[node]){
-            if(it!=par){
-                sparse[0][it]=node;
-                depth[it]=depth[node]+1;
-                dfs(it, node);
+
+    void dfs(int node, int par, long long val = -1){
+        if(par != -1){
+            sparse[0][node] = par;
+            minsparse[0][node] = val;
+            maxsparse[0][node] = val;
+            depth[node] = depth[par] + 1;
+        }
+        for(int i = 1; i < logv + 2; i++) {
+            if(sparse[i - 1][node] != -1) {
+                sparse[i][node] = sparse[i-1][sparse[i - 1][node]];
+                maxsparse[i][node] = max(maxsparse[i - 1][node], maxsparse[i-1][sparse[i - 1][node]]);
+                minsparse[i][node] = min(minsparse[i - 1][node], minsparse[i-1][sparse[i - 1][node]]);
+            }
+            else break;
+        }
+        for(auto it:adj[node]){
+            if(it.first!=par){
+                dfs(it.first, node,it.second);
             }
         }
     }
-    ///Sparse Table
-    void sparseTable(){
-        for(int i=1;i<22;i++){
-            for(int j=1;j<=N;j++){
-                int x=sparse[i-1][j];
-                if(x!=-1) sparse[i][j]=sparse[i-1][x];
+    inline tuple<T, T, T> findLCA(int u, int v){
+        if(depth[u] > depth[v]) swap(u, v);
+        tuple<T, T, T> ans(u, -1, inf);
+        for(int i = logv + 1; i >= 0; i--) {
+            if(sparse[i][v] != -1 && depth[sparse[i][v]] >= depth[u]) {
+                get<2>(ans) = min(get<2>(ans), minsparse[i][v]);
+                get<1>(ans) = max(get<1>(ans), maxsparse[i][v]);
+                v = sparse[i][v];
             }
         }
-    }
-    ///Level up
-    int levelUp(int u, int v){
-    int dif=depth[v]-depth[u];
-        while(dif>0){
-            int logDif=log2(dif);
-            v = sparse[logDif][v];
-            dif-=(1<<logDif);
+        if(u == v){
+            get<0>(ans) = u;
+            return ans;
         }
-        return v;
-    }
-    ///Find LCA
-    int findLCA(int u, int v){
-        if(depth[u]>depth[v]) swap(u,v);
-        v=levelUp(u,v);
-        if(u==v) return u;
-        for(int i=LogV+2;i>=0;i--){
-            int x=sparse[i][u];
-            int y=sparse[i][v];
-            if(x == -1 || y == -1) continue;
-            if(x!=y){
-                u=x;
-                v=y;
+        for(int i = logv + 1; i >= 0; i--) {
+            if(sparse[i][v] != sparse[i][u]) {
+                get<2>(ans) = min({get<2>(ans), minsparse[i][v], minsparse[i][u]});
+                get<1>(ans) = max({get<1>(ans), maxsparse[i][v], maxsparse[i][u]});
+                v = sparse[i][v];
+                u = sparse[i][u];
             }
         }
-        return sparse[0][u];
+        get<2>(ans) = min({get<2>(ans), minsparse[0][v], minsparse[0][u]});
+        get<1>(ans) = max({get<1>(ans), maxsparse[0][v], maxsparse[0][u]});
+        get<0>(ans) = sparse[0][u];
+        return ans;
     }
 
-}lca;
-int main() {
-
-    int n;
-    cin>>n;
-    lca.init(n); ///must need to initialize
-
-    for(int i=0;i<n-1;i++){
-        int u,v;
-        cin>>u>>v;
-        lca.adj[u].push_back(v);
-        lca.adj[v].push_back(u);
-    }
-
-    lca.dfs(1,-1);
-    lca.sparseTable();
-
-    int q;
-    cin>>q;
-    ///Query
-    while(q--){
-        int a,b;
-        cin>>a>>b;
-
-        cout<<lca.findLCA(a,b)<<endl;
-
-    }
-
-	return 0;
-}
-
+};
