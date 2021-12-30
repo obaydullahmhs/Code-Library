@@ -5,63 +5,57 @@ using namespace std;
 class MST{
 
 private:
-
     struct data{
         int u,v;
         long long w;
-        data(){
-            u=v=w=0;
-        }
-        data(int _u,int _v, long long _w){
-            u=_u,v=_v,w=_w;
-        }
+        data():u(0), v(0), w(0){}
+        data(int _u,int _v, long long _w):u(_u), v(_v), w(_w){}
         bool operator<(const data& ob)const{
-            return w<ob.w;
+            return w < ob.w;
         }
     };
+    int n;
     vector<int> path;
     vector<data> graph;
+    vector<tuple<int, int, long long> > ansG;
 
 public:
-    MST(){
-        path=vector<int>(2e5+25);
-        root(2e5+20);
-    }
 
-    MST(int n){
-        path=vector<int>(n+25);
-        root(n+20);
+    MST(int _n):n(_n), path(n + 5){
+        iota(path.begin(), path.end(), 0);
     }
-
-    void root(int n) {
-        for(int i=0; i<=n; i++)
-            path[i]=i;
+    void init(int _n){
+        this->n = _n;
+        this->path.resize(n + 5);
+        iota(path.begin(), path.end(), 0);
     }
 
     int findUnion(int x) {
-        if(path[x]==x) return x;
-        return path[x]=findUnion(path[x]);
-
+        if(path[x] == x) return x;
+        return path[x] = findUnion(path[x]);
     }
 
     void mergeUnion(int x,int y) {
-        path[findUnion(x)]=findUnion(y);
+        path[findUnion(x)] = findUnion(y);
     }
 
     bool sameSet(int x,int y) {
-        return findUnion(x)==findUnion(y);
+        return findUnion(x) == findUnion(y);
     }
 
-    long long getMST(int n){
+    long long getMST(){
+
         sort(graph.begin(),graph.end());
-        long long ans=0;
-        int cnt=0;
-        for(int i=0;i<graph.size();i++){
-            if(!sameset(graph[i].u,graph[i].v)){
-                ans+=graph[i].w;cnt++;
-                mergeUnion(graph[i].u,graph[i].v);
+        long long ans = 0;
+        int cnt = 0;
+        for(int i = 0;i < graph.size(); i++){
+            if(!sameSet(graph[i].u, graph[i].v)){
+                ans += graph[i].w;
+                cnt++;
+                mergeUnion(graph[i].u, graph[i].v);
+                ansG.emplace_back(make_tuple(graph[i].u, graph[i].v, graph[i].w));
             }
-            if(cnt==n-1) break;
+            if(cnt == n - 1) break;
         }
         return ans;
     }
@@ -69,7 +63,12 @@ public:
     void Add(int u, int v, long long w){
         graph.push_back(data(u,v,w));
     }
+
+    vector<tuple<int, int, long long> > returnTree(){
+        return ansG;
+    }
 };
+
 int main(){
 
     int n,m;
