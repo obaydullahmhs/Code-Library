@@ -60,21 +60,21 @@ using namespace Sparse;
 int cs;
 int main(){
 
-    int n, q;
-    scanf("%d %d", &n, &q);
-    vector<int> v(n);
-    for(int& in: v) scanf("%d", &in);
+  int n, q;
+  scanf("%d %d", &n, &q);
+  vector<int> v(n);
+  for(int& in: v) scanf("%d", &in);
 
-    minRMQ <int> rmq(n);
-    rmq.preProcess(v);
-    printf("Case %d:\n", ++cs);
+  minRMQ <int> rmq(n);
+  rmq.preProcess(v);
+  printf("Case %d:\n", ++cs);
 
-    while(q--){
-        int l, r; scanf("%d %d", &l, &r);
-        printf("%d\n", rmq.getValue(--l, --r));
-    }
+  while(q--){
+    int l, r; scanf("%d %d", &l, &r);
+    printf("%d\n", rmq.getValue(--l, --r));
+  }
 
-    return 0;
+  return 0;
 }
 
 
