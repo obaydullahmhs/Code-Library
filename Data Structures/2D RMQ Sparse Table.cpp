@@ -28,9 +28,9 @@ namespace Sparse2D{
         for(int ic = 0; ic < m; ic++)
           sparse[0][ir][0][ic] = given[ir][ic];
 
-          for(int jc = 1; jc <= logm; jc++)
-            for(int ic = 0; ic + (1 << (jc - 1)) < m; ic++)
-              sparse[0][ir][jc][ic] = merge(sparse[0][ir][jc - 1][ic], sparse[0][ir][jc - 1][ic + (1 << (jc - 1))]);
+        for(int jc = 1; jc <= logm; jc++)
+          for(int ic = 0; ic + (1 << (jc - 1)) < m; ic++)
+            sparse[0][ir][jc][ic] = merge(sparse[0][ir][jc - 1][ic], sparse[0][ir][jc - 1][ic + (1 << (jc - 1))]);
       }
 
 
